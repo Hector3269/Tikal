@@ -1,5 +1,5 @@
-use super::column_name::ColumnName;
-use super::sort_direction::SortDirection;
+use crate::kernel::types::schema::column_name::ColumnName;
+use crate::kernel::types::query::sort_direction::SortDirection;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OrderBy {

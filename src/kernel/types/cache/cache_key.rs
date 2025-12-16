@@ -1,6 +1,5 @@
-use super::non_empty_string::NonEmptyString;
+use crate::kernel::types::core::non_empty_string::NonEmptyString;
 
-/// Represents a key for caching query results.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CacheKey(NonEmptyString);
 

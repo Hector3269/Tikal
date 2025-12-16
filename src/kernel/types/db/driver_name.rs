@@ -1,6 +1,5 @@
-use super::non_empty_string::NonEmptyString;
+use crate::kernel::types::core::non_empty_string::NonEmptyString;
 
-/// Represents the name of a database driver.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DriverName(NonEmptyString);
 

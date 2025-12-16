@@ -1,4 +1,4 @@
-use super::non_empty_string::NonEmptyString;
+use crate::kernel::types::core::non_empty_string::NonEmptyString;
 
 /// Represents the name of a migration.
 #[derive(Debug, Clone, PartialEq, Eq)]

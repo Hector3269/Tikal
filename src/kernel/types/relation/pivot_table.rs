@@ -1,6 +1,5 @@
-use super::table_name::TableName;
+use crate::kernel::types::schema::table_name::TableName;
 
-/// Represents a pivot table for many-to-many relationships.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PivotTable(TableName);
 

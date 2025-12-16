@@ -1,4 +1,4 @@
-use super::value::Value;
+use crate::kernel::types::core::value::Value;
 
 /// Represents a default value for a column.
 #[derive(Debug, Clone, PartialEq)]

@@ -1,9 +1,8 @@
-use super::table_name::TableName;
-use super::join_type::JoinType;
-use super::column_name::ColumnName;
-use super::operator::Operator;
+use crate::kernel::types::schema::table_name::TableName;
+use crate::kernel::types::query::join_type::JoinType;
+use crate::kernel::types::schema::column_name::ColumnName;
+use crate::kernel::types::query::operator::Operator;
 
-/// Represents a JOIN clause in a query.
 #[derive(Debug, Clone, PartialEq)]
 pub struct JoinClause {
     table: TableName,
@@ -11,7 +10,6 @@ pub struct JoinClause {
     on_conditions: Vec<JoinOn>,
 }
 
-/// Represents the ON condition for a JOIN.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JoinOn {
     left_column: ColumnName,

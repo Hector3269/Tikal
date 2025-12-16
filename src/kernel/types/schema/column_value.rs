@@ -1,4 +1,4 @@
-use super::value::Value;
+use crate::kernel::types::core::value::Value;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ColumnValue(Value);

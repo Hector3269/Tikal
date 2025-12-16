@@ -1,4 +1,4 @@
-use super::non_empty_string::NonEmptyString;
+use crate::kernel::types::core::non_empty_string::NonEmptyString;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IndexName(NonEmptyString);

@@ -1,8 +1,7 @@
-use super::column_name::ColumnName;
-use super::operator::Operator;
-use super::value::Value;
+use crate::kernel::types::schema::column_name::ColumnName;
+use crate::kernel::types::query::operator::Operator;
+use crate::kernel::types::core::value::Value;
 
-/// Represents a single WHERE condition in a query.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WhereClause {
     column: ColumnName,

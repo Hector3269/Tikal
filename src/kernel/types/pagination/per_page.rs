@@ -1,6 +1,5 @@
-use super::limit::Limit;
+use crate::kernel::types::query::limit::Limit;
 
-/// Represents the number of items per page for pagination.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PerPage(Limit);
 
