@@ -19,8 +19,8 @@ impl Settings {
         let driver_name = get_env_var("DATABASE_DRIVER")
             .ok_or_else(|| KernelError::config("DATABASE_DRIVER is required"))?;
 
-        let driver = DriverName::new(driver_name)
-            .ok_or_else(|| KernelError::config("DATABASE_DRIVER must be non-empty"))?;
+        let driver = DriverName::from_str(&driver_name)
+            .ok_or_else(|| KernelError::config("DATABASE_DRIVER must be one of: sqlite, mysql, postgresql"))?;
 
         let pool_size = get_env_var("DATABASE_POOL_SIZE")
             .and_then(|s| s.parse::<u32>().ok())
