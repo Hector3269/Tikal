@@ -1,5 +1,5 @@
 use super::query_builder::QueryBuilder;
-use crate::infrastructure::database::executor::QueryExecutor;
+use crate::domain::QueryExecutor;
 use crate::kernel::error::KernelError;
 
 impl<T> QueryBuilder<T>
