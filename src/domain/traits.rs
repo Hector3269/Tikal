@@ -4,6 +4,35 @@ use crate::kernel::types::db::DbRow;
 use async_trait::async_trait;
 use std::collections::HashMap;
 
+#[async_trait]
+pub trait QueryExecutor {
+    async fn execute_raw(&self, sql: &str, params: &[Value]) -> Result<(), KernelError>;
+    async fn query_raw(&self, sql: &str, params: &[Value]) -> Result<Vec<DbRow>, KernelError>;
+    async fn transaction(
+        &self,
+        f: Box<
+            dyn FnOnce() -> std::pin::Pin<
+                    Box<dyn std::future::Future<Output = Result<(), KernelError>> + Send>,
+                > + Send,
+        >,
+    ) -> Result<(), KernelError>;
+    async fn savepoint(
+        &self,
+        name: &str,
+        f: Box<
+            dyn FnOnce() -> std::pin::Pin<
+                    Box<dyn std::future::Future<Output = Result<(), KernelError>> + Send>,
+                > + Send,
+        >,
+    ) -> Result<(), KernelError>;
+    async fn query_stream(
+        &self,
+        sql: &str,
+        params: &[Value],
+        callback: Box<dyn Fn(DbRow) -> Result<(), KernelError> + Send + Sync>,
+    ) -> Result<(), KernelError>;
+}
+
 pub trait FromRow {
     fn from_row(row: HashMap<String, Value>) -> Result<Self, KernelError>
     where
@@ -34,19 +63,19 @@ pub trait ActiveRecord: Entity + Identifiable + Sized {
     fn attributes(&self) -> HashMap<String, Value>;
 
     /// Find by ID
-    async fn find<E: crate::infrastructure::database::executor::QueryExecutor + Send + Sync>(
+    async fn find<E: QueryExecutor + Send + Sync>(
         executor: &E,
         id: &String,
     ) -> Result<Option<Self>, crate::kernel::error::KernelError>;
 
     /// Save the entity
-    async fn save<E: crate::infrastructure::database::executor::QueryExecutor + Send + Sync>(
+    async fn save<E: QueryExecutor + Send + Sync>(
         &mut self,
         executor: &E,
     ) -> Result<(), crate::kernel::error::KernelError>;
 
     /// Delete the entity
-    async fn delete<E: crate::infrastructure::database::executor::QueryExecutor + Send + Sync>(
+    async fn delete<E: QueryExecutor + Send + Sync>(
         &self,
         executor: &E,
     ) -> Result<(), crate::kernel::error::KernelError>;
@@ -101,7 +130,7 @@ pub trait Model:
     }
 
     /// Find by ID (convenience method)
-    async fn find_by_id<E: crate::infrastructure::database::executor::QueryExecutor>(
+    async fn find_by_id<E: QueryExecutor + Send + Sync>(
         executor: &E,
         id: &String,
     ) -> Result<Option<Self>, crate::kernel::error::KernelError> {
@@ -109,14 +138,14 @@ pub trait Model:
     }
 
     /// Get all records
-    async fn all<E: crate::infrastructure::database::executor::QueryExecutor>(
+    async fn all<E: QueryExecutor + Send + Sync>(
         executor: &E,
     ) -> Result<Vec<Self>, crate::kernel::error::KernelError> {
         Self::query().get(executor).await
     }
 
     /// Get first record matching query
-    async fn first<E: crate::infrastructure::database::executor::QueryExecutor>(
+    async fn first<E: QueryExecutor + Send + Sync>(
         query: crate::domain::queries::QueryBuilder<Self>,
         executor: &E,
     ) -> Result<Option<Self>, crate::kernel::error::KernelError> {
@@ -124,7 +153,7 @@ pub trait Model:
     }
 
     /// Get records matching query
-    async fn get<E: crate::infrastructure::database::executor::QueryExecutor>(
+    async fn get<E: QueryExecutor + Send + Sync>(
         query: crate::domain::queries::QueryBuilder<Self>,
         executor: &E,
     ) -> Result<Vec<Self>, crate::kernel::error::KernelError> {

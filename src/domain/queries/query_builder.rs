@@ -1,6 +1,6 @@
 use super::{Operator, WhereCondition};
+use crate::domain::QueryExecutor;
 use crate::domain::*;
-use crate::infrastructure::database::executor::QueryExecutor;
 use crate::kernel::error::KernelError;
 use crate::kernel::types::core::Value;
 use std::marker::PhantomData;

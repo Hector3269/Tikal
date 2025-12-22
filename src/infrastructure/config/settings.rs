@@ -1,35 +1,53 @@
-use crate::kernel::types::core::non_empty_string::NonEmptyString;
-use crate::kernel::types::db::driver_name::DriverName;
+use std::env;
+
+use crate::infrastructure::config::database::DatabaseConfig;
+use crate::infrastructure::config::logging::LoggingConfig;
 use crate::kernel::error::KernelError;
-use super::env::get_env_var;
+use crate::kernel::types::db::DriverName;
 
 #[derive(Debug, Clone)]
 pub struct Settings {
-    pub database_url: NonEmptyString,
-    pub driver: DriverName,
-    pub pool_size: u32,
+    pub database: DatabaseConfig,
+    pub logging: LoggingConfig,
 }
 
 impl Settings {
-    pub fn new() -> Result<Self, KernelError> {
-        let database_url = get_env_var("DATABASE_URL")
-            .and_then(|s| NonEmptyString::new(s))
-            .ok_or_else(|| KernelError::config("DATABASE_URL is required and must be non-empty"))?;
+    pub fn from_env() -> Result<Self, KernelError> {
+        let driver = env_var_required("DATABASE_DRIVER")?;
+        let driver = DriverName::from_str(&driver)
+            .ok_or_else(|| KernelError::config("Invalid DATABASE_DRIVER"))?;
 
-        let driver_name = get_env_var("DATABASE_DRIVER")
-            .ok_or_else(|| KernelError::config("DATABASE_DRIVER is required"))?;
+        let database = match driver {
+            DriverName::SQLite => {
+                let path =
+                    env::var("DATABASE_PATH").unwrap_or_else(|_| "database.sqlite".to_string());
 
-        let driver = DriverName::from_str(&driver_name)
-            .ok_or_else(|| KernelError::config("DATABASE_DRIVER must be one of: sqlite, mysql, postgresql"))?;
+                DatabaseConfig::sqlite(path)
+            }
 
-        let pool_size = get_env_var("DATABASE_POOL_SIZE")
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(10);
+            DriverName::MySQL | DriverName::PostgreSQL => DatabaseConfig {
+                driver,
+                host: Some(env_var_required("DATABASE_HOST")?),
+                port: Some(
+                    env_var_required("DATABASE_PORT")?
+                        .parse()
+                        .map_err(|_| KernelError::config("DATABASE_PORT must be a number"))?,
+                ),
+                database: env_var_required("DATABASE_NAME")?,
+                username: Some(env_var_required("DATABASE_USERNAME")?),
+                password: Some(env::var("DATABASE_PASSWORD").unwrap_or_default()),
+                ..Default::default()
+            },
+        };
 
-        Ok(Settings {
-            database_url,
-            driver,
-            pool_size,
-        })
+        database.validate()?;
+
+        let logging = LoggingConfig::default();
+
+        Ok(Self { database, logging })
     }
+}
+
+fn env_var_required(key: &str) -> Result<String, KernelError> {
+    env::var(key).map_err(|_| KernelError::config(&format!("{} is required", key)))
 }

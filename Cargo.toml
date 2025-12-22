@@ -2,6 +2,7 @@
 name = "tikal"
 version = "0.1.0"
 edition = "2024"
+repository = "https://github.com/Hector3269/Tikal.git"
 
 [lib]
 name = "tikal"
@@ -28,6 +29,7 @@ proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 once_cell = "1.19"
+testcontainers = "0.26.2"
 
 [[test]]
 name = "run_all"

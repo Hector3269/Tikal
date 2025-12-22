@@ -1,6 +1,6 @@
-use crate::kernel::types::core::Value;
+use crate::domain::QueryExecutor;
 use crate::infrastructure::types::DbResult;
-use crate::infrastructure::database::executor::QueryExecutor;
+use crate::kernel::types::core::Value;
 
 pub struct HasManyBuilder<T> {
     pub related_model: std::marker::PhantomData<T>,
@@ -22,7 +22,11 @@ impl<T> HasManyBuilder<T> {
         T: crate::domain::ActiveRecord + From<crate::kernel::types::db::DbRow>,
         E: QueryExecutor,
     {
-        let sql = format!("SELECT * FROM {} WHERE {} = ?", T::table_name(), self.foreign_key);
+        let sql = format!(
+            "SELECT * FROM {} WHERE {} = ?",
+            T::table_name(),
+            self.foreign_key
+        );
         let params = vec![local_value.into()];
         let rows = executor.query_raw(&sql, &params).await?;
         Ok(rows.into_iter().map(T::from).collect())
@@ -49,7 +53,11 @@ impl<T> BelongsToBuilder<T> {
         T: crate::domain::ActiveRecord + From<crate::kernel::types::db::DbRow>,
         E: QueryExecutor,
     {
-        let sql = format!("SELECT * FROM {} WHERE {} = ?", T::table_name(), self.owner_key);
+        let sql = format!(
+            "SELECT * FROM {} WHERE {} = ?",
+            T::table_name(),
+            self.owner_key
+        );
         let params = vec![foreign_value.into()];
         let rows = executor.query_raw(&sql, &params).await?;
         Ok(rows.into_iter().next().map(T::from))
