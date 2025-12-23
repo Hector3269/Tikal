@@ -21,7 +21,7 @@ impl Casts {
     }
 
     pub fn add_from_str(self, field: &str, cast_type: &str) -> Result<Self, KernelError> {
-        let cast = CastType::from_str(cast_type)?;
+        let cast = cast_type.parse()?;
         Ok(self.add(field, cast))
     }
 

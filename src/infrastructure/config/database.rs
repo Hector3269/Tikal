@@ -95,7 +95,7 @@ impl DatabaseConfig {
             ),
 
             DriverName::PostgreSQL => format!(
-                "postgres://{}:{}@{}:{}/{}",
+                "postgresql://{}:{}@{}:{}/{}",
                 self.username.as_ref().unwrap(),
                 self.password.as_ref().unwrap_or(&"".to_string()),
                 self.host.as_ref().unwrap(),

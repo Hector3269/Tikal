@@ -24,17 +24,11 @@ impl<D: DatabaseDriver> SqlxQueryExecutor<D> {
 #[async_trait]
 impl<D: DatabaseDriver + Send + Sync> QueryExecutor for SqlxQueryExecutor<D> {
     async fn execute_raw(&self, sql: &str, params: &[Value]) -> Result<(), KernelError> {
-        self.driver
-            .execute(&self.pool, sql, params)
-            .await
-            .map_err(|e| e.into())
+        self.driver.execute(&self.pool, sql, params).await
     }
 
     async fn query_raw(&self, sql: &str, params: &[Value]) -> Result<Vec<DbRow>, KernelError> {
-        self.driver
-            .query(&self.pool, sql, params)
-            .await
-            .map_err(|e| e.into())
+        self.driver.query(&self.pool, sql, params).await
     }
 
     async fn transaction(
@@ -45,10 +39,7 @@ impl<D: DatabaseDriver + Send + Sync> QueryExecutor for SqlxQueryExecutor<D> {
                 > + Send,
         >,
     ) -> Result<(), KernelError> {
-        self.driver
-            .transaction(&self.pool, f)
-            .await
-            .map_err(|e| e.into())
+        self.driver.transaction(&self.pool, f).await
     }
 
     async fn savepoint(
@@ -60,10 +51,7 @@ impl<D: DatabaseDriver + Send + Sync> QueryExecutor for SqlxQueryExecutor<D> {
                 > + Send,
         >,
     ) -> Result<(), KernelError> {
-        self.driver
-            .transaction(&self.pool, f)
-            .await
-            .map_err(|e| e.into())
+        self.driver.transaction(&self.pool, f).await
     }
 
     async fn query_stream(

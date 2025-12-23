@@ -38,9 +38,9 @@ fn test_database_config_validation_failures() {
     mysql_config.username = Some("".to_string());
     assert!(mysql_config.validate().is_err());
 
-    // Invalid MySQL - port too high
-    let mut mysql_config = DatabaseConfig::mysql("localhost", 65535, "testdb", "user", "pass");
-    mysql_config.port = Some(65535);
+    // Invalid MySQL - zero port
+    let mut mysql_config = DatabaseConfig::mysql("localhost", 3306, "testdb", "user", "pass");
+    mysql_config.port = Some(0);
     assert!(mysql_config.validate().is_err());
 }
 

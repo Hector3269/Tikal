@@ -1,5 +1,6 @@
 use crate::kernel::error::KernelError;
 use crate::kernel::types::core::Value;
+use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CastType {
@@ -11,8 +12,10 @@ pub enum CastType {
     DateTime,
 }
 
-impl CastType {
-    pub fn from_str(s: &str) -> Result<Self, KernelError> {
+impl FromStr for CastType {
+    type Err = KernelError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "bool" => Ok(CastType::Bool),
             "int" => Ok(CastType::Int),
@@ -26,7 +29,9 @@ impl CastType {
             )),
         }
     }
+}
 
+impl CastType {
     pub fn cast_from_value(&self, value: &Value) -> Result<Value, KernelError> {
         match (self, value) {
             (CastType::Bool, Value::Bool(b)) => Ok(Value::Bool(*b)),

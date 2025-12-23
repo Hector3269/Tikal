@@ -5,17 +5,17 @@ use tikal::kernel::types::core::Value;
 
 #[test]
 fn cast_type_from_str_valid() {
-    assert_eq!(CastType::from_str("bool").unwrap(), CastType::Bool);
-    assert_eq!(CastType::from_str("int").unwrap(), CastType::Int);
-    assert_eq!(CastType::from_str("float").unwrap(), CastType::Float);
-    assert_eq!(CastType::from_str("string").unwrap(), CastType::String);
-    assert_eq!(CastType::from_str("json").unwrap(), CastType::Json);
-    assert_eq!(CastType::from_str("datetime").unwrap(), CastType::DateTime);
+    assert_eq!("bool".parse::<CastType>().unwrap(), CastType::Bool);
+    assert_eq!("int".parse::<CastType>().unwrap(), CastType::Int);
+    assert_eq!("float".parse::<CastType>().unwrap(), CastType::Float);
+    assert_eq!("string".parse::<CastType>().unwrap(), CastType::String);
+    assert_eq!("json".parse::<CastType>().unwrap(), CastType::Json);
+    assert_eq!("datetime".parse::<CastType>().unwrap(), CastType::DateTime);
 }
 
 #[test]
 fn cast_type_from_str_invalid() {
-    let result = CastType::from_str("invalid");
+    let result = "invalid".parse::<CastType>();
     assert!(result.is_err());
     assert!(matches!(
         result.unwrap_err(),

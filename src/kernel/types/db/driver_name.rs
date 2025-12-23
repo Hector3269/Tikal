@@ -1,8 +1,23 @@
+use std::str::FromStr;
+
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum DriverName {
     SQLite,
     MySQL,
     PostgreSQL,
+}
+
+impl FromStr for DriverName {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "sqlite" => Ok(DriverName::SQLite),
+            "mysql" => Ok(DriverName::MySQL),
+            "postgresql" | "postgres" => Ok(DriverName::PostgreSQL),
+            _ => Err(()),
+        }
+    }
 }
 
 impl DriverName {
@@ -11,15 +26,6 @@ impl DriverName {
             DriverName::SQLite => "sqlite",
             DriverName::MySQL => "mysql",
             DriverName::PostgreSQL => "postgresql",
-        }
-    }
-
-    pub fn from_str(s: &str) -> Option<Self> {
-        match s.to_lowercase().as_str() {
-            "sqlite" => Some(DriverName::SQLite),
-            "mysql" => Some(DriverName::MySQL),
-            "postgresql" | "postgres" => Some(DriverName::PostgreSQL),
-            _ => None,
         }
     }
 }

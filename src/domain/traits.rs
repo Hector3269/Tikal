@@ -44,7 +44,7 @@ pub trait Entity: Send + Sync {
 }
 
 pub trait Identifiable {
-    fn id(&self) -> &String;
+    fn id(&self) -> &str;
 }
 
 /// ActiveRecord pattern for models that handle their own persistence
@@ -65,7 +65,7 @@ pub trait ActiveRecord: Entity + Identifiable + Sized {
     /// Find by ID
     async fn find<E: QueryExecutor + Send + Sync>(
         executor: &E,
-        id: &String,
+        id: &str,
     ) -> Result<Option<Self>, crate::kernel::error::KernelError>;
 
     /// Save the entity
@@ -132,7 +132,7 @@ pub trait Model:
     /// Find by ID (convenience method)
     async fn find_by_id<E: QueryExecutor + Send + Sync>(
         executor: &E,
-        id: &String,
+        id: &str,
     ) -> Result<Option<Self>, crate::kernel::error::KernelError> {
         Self::find(executor, id).await
     }

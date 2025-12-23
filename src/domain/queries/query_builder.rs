@@ -28,6 +28,12 @@ impl<T> QueryBuilder<T> {
     }
 }
 
+impl<T> Default for QueryBuilder<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> QueryBuilder<T>
 where
     T: Model + Send + Sync + 'static,

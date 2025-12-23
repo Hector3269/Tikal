@@ -75,7 +75,7 @@ fn database_config_connection_url_postgres() {
     let config = DatabaseConfig::postgres("localhost", 5432, "testdb", "user", "pass");
     assert_eq!(
         config.connection_url().unwrap(),
-        "postgres://user:pass@localhost:5432/testdb"
+        "postgresql://user:pass@localhost:5432/testdb"
     );
 }
 
@@ -154,10 +154,6 @@ fn settings_from_env_sqlite_default_path() {
     let settings = Settings::from_env().unwrap();
     assert_eq!(settings.database.driver, DriverName::SQLite);
     assert_eq!(settings.database.database, "database.sqlite");
-
-    unsafe {
-        std::env::remove_var("DATABASE_DRIVER");
-    }
 }
 
 #[test]

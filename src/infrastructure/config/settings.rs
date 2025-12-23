@@ -14,8 +14,9 @@ pub struct Settings {
 impl Settings {
     pub fn from_env() -> Result<Self, KernelError> {
         let driver = env_var_required("DATABASE_DRIVER")?;
-        let driver = DriverName::from_str(&driver)
-            .ok_or_else(|| KernelError::config("Invalid DATABASE_DRIVER"))?;
+        let driver = driver
+            .parse()
+            .map_err(|_| KernelError::config("Invalid DATABASE_DRIVER"))?;
 
         let database = match driver {
             DriverName::SQLite => {
