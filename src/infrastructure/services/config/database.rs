@@ -1,5 +1,5 @@
-use crate::kernel::error::KernelError;
-use crate::kernel::types::db::DriverName;
+use crate::domain::shared::db::DriverName;
+use crate::Error;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10,11 +10,6 @@ pub struct DatabaseConfig {
     pub database: String,
     pub username: Option<String>,
     pub password: Option<String>,
-
-    pub max_connections: u32,
-    pub min_connections: u32,
-    pub connection_timeout_seconds: u64,
-    pub command_timeout_seconds: u64,
 }
 
 impl Default for DatabaseConfig {
@@ -23,13 +18,9 @@ impl Default for DatabaseConfig {
             driver: DriverName::SQLite,
             host: None,
             port: None,
-            database: "database.sqlite".to_string(),
+            database: "database.db".to_string(),
             username: None,
             password: None,
-            max_connections: 10,
-            min_connections: 1,
-            connection_timeout_seconds: 30,
-            command_timeout_seconds: 30,
         }
     }
 }
@@ -79,35 +70,43 @@ impl DatabaseConfig {
         }
     }
 
-    pub fn connection_url(&self) -> Result<String, KernelError> {
+    pub fn connection_url(&self) -> Result<String, Error> {
         self.validate()?;
 
         Ok(match self.driver {
-            DriverName::SQLite => format!("sqlite:{}", self.database),
+            DriverName::SQLite => format!("sqlite:{}?mode=rwc", self.database),
 
             DriverName::MySQL => format!(
                 "mysql://{}:{}@{}:{}/{}",
-                self.username.as_ref().unwrap(),
+                self.username
+                    .as_ref()
+                    .expect("Username should be present after validation"),
                 self.password.as_ref().unwrap_or(&"".to_string()),
-                self.host.as_ref().unwrap(),
-                self.port.unwrap(),
+                self.host
+                    .as_ref()
+                    .expect("Host should be present after validation"),
+                self.port.expect("Port should be present after validation"),
                 self.database
             ),
 
             DriverName::PostgreSQL => format!(
                 "postgresql://{}:{}@{}:{}/{}",
-                self.username.as_ref().unwrap(),
+                self.username
+                    .as_ref()
+                    .expect("Username should be present after validation"),
                 self.password.as_ref().unwrap_or(&"".to_string()),
-                self.host.as_ref().unwrap(),
-                self.port.unwrap(),
+                self.host
+                    .as_ref()
+                    .expect("Host should be present after validation"),
+                self.port.expect("Port should be present after validation"),
                 self.database
             ),
         })
     }
 
-    pub fn validate(&self) -> Result<(), KernelError> {
+    pub fn validate(&self) -> Result<(), Error> {
         if self.database.trim().is_empty() {
-            return Err(KernelError::config("Database name cannot be empty"));
+            return Err(Error::config("Database name cannot be empty"));
         }
 
         match self.driver {
@@ -115,13 +114,13 @@ impl DatabaseConfig {
 
             DriverName::MySQL | DriverName::PostgreSQL => {
                 if self.host.as_deref().unwrap_or("").is_empty() {
-                    return Err(KernelError::config("Host is required"));
+                    return Err(Error::config("Host is required"));
                 }
                 if self.username.as_deref().unwrap_or("").is_empty() {
-                    return Err(KernelError::config("Username is required"));
+                    return Err(Error::config("Username is required"));
                 }
-                if self.port.unwrap_or(0) == 0 {
-                    return Err(KernelError::config("Port must be greater than 0"));
+                if self.port.is_none() || self.port.unwrap_or(0) == 0 {
+                    return Err(Error::config("Port must be greater than 0"));
                 }
                 Ok(())
             }
