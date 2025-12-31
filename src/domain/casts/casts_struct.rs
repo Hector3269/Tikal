@@ -1,6 +1,6 @@
 use crate::domain::casts::cast_type::CastType;
-use crate::kernel::error::KernelError;
-use crate::kernel::types::core::Value;
+use crate::domain::value::Value;
+use crate::Error;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -20,7 +20,7 @@ impl Casts {
         self
     }
 
-    pub fn add_from_str(self, field: &str, cast_type: &str) -> Result<Self, KernelError> {
+    pub fn add_from_str(self, field: &str, cast_type: &str) -> Result<Self, Error> {
         let cast = cast_type.parse()?;
         Ok(self.add(field, cast))
     }
@@ -29,7 +29,7 @@ impl Casts {
         self.definitions.get(field)
     }
 
-    pub fn cast_on_load(&self, field: &str, value: &Value) -> Result<Value, KernelError> {
+    pub fn cast_on_load(&self, field: &str, value: &Value) -> Result<Value, Error> {
         if let Some(cast_type) = self.get_cast(field) {
             cast_type.cast_from_value(value)
         } else {
@@ -37,7 +37,7 @@ impl Casts {
         }
     }
 
-    pub fn cast_on_save(&self, field: &str, value: &Value) -> Result<Value, KernelError> {
+    pub fn cast_on_save(&self, field: &str, value: &Value) -> Result<Value, Error> {
         if let Some(cast_type) = self.get_cast(field) {
             cast_type.cast_to_value(value)
         } else {
@@ -57,7 +57,7 @@ pub trait HasCasts {
         Casts::new()
     }
 
-    fn cast_attributes_on_load(attributes: &mut HashMap<String, Value>) -> Result<(), KernelError> {
+    fn cast_attributes_on_load(attributes: &mut HashMap<String, Value>) -> Result<(), Error> {
         let casts = Self::casts();
         for (field, value) in attributes.iter_mut() {
             *value = casts.cast_on_load(field, value)?;
@@ -65,7 +65,7 @@ pub trait HasCasts {
         Ok(())
     }
 
-    fn cast_attributes_on_save(attributes: &mut HashMap<String, Value>) -> Result<(), KernelError> {
+    fn cast_attributes_on_save(attributes: &mut HashMap<String, Value>) -> Result<(), Error> {
         let casts = Self::casts();
         for (field, value) in attributes.iter_mut() {
             *value = casts.cast_on_save(field, value)?;

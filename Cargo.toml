@@ -1,9 +1,9 @@
 [package]
 name = "tikal"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A Rust ORM library for building database-driven applications"
-authors = ["Hector3269 <hector@example.com>"]
+authors = ["Hector3269"]
 repository = "https://github.com/Hector3269/Tikal.git"
 readme = "README.md"
 
