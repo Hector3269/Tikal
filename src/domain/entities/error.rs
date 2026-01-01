@@ -176,21 +176,6 @@ impl From<sqlx::Error> for TikalError {
         }
     }
 }
-
-impl From<crate::infrastructure::adapters::database::global::DatabaseError> for TikalError {
-    fn from(err: crate::infrastructure::adapters::database::global::DatabaseError) -> Self {
-        match err {
-            crate::infrastructure::adapters::database::global::DatabaseError::NotInitialized => {
-                TikalError::invalid_state("Database not initialized")
-            }
-            crate::infrastructure::adapters::database::global::DatabaseError::AlreadyInitialized => {
-                TikalError::internal("Database already initialized")
-            }
-            crate::infrastructure::adapters::database::global::DatabaseError::Kernel(e) => e,
-        }
-    }
-}
-
 impl TikalError {
     pub fn invalid_state(msg: &str) -> Self {
         TikalError::InvalidState {

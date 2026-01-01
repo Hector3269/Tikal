@@ -1,6 +1,5 @@
 use crate::infrastructure::types::DbResult;
-use crate::kernel::types::core::Value;
-use crate::kernel::types::db::DbRow;
+use crate::infrastructure::types::{DbRow, Value};
 use async_trait::async_trait;
 use sqlx::{Database, Pool};
 

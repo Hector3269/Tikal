@@ -1,6 +1,5 @@
 use crate::domain::QueryExecutor;
-use crate::infrastructure::types::DbResult;
-use crate::kernel::types::core::Value;
+use crate::infrastructure::core::types::{DbResult, DbRow, Value};
 
 pub struct HasManyBuilder<T> {
     pub related_model: std::marker::PhantomData<T>,
@@ -19,7 +18,7 @@ impl<T> HasManyBuilder<T> {
 
     pub async fn get<E>(&self, local_value: impl Into<Value>, executor: &E) -> DbResult<Vec<T>>
     where
-        T: crate::domain::ActiveRecord + From<crate::kernel::types::db::DbRow>,
+        T: crate::domain::ActiveRecord + From<DbRow>,
         E: QueryExecutor,
     {
         let sql = format!(
@@ -50,7 +49,7 @@ impl<T> BelongsToBuilder<T> {
 
     pub async fn get<E>(&self, foreign_value: impl Into<Value>, executor: &E) -> DbResult<Option<T>>
     where
-        T: crate::domain::ActiveRecord + From<crate::kernel::types::db::DbRow>,
+        T: crate::domain::ActiveRecord + From<DbRow>,
         E: QueryExecutor,
     {
         let sql = format!(

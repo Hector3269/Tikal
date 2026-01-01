@@ -1,4 +1,4 @@
-use syn::{Attribute, Field, Lit};
+use syn::{Attribute, Field};
 
 #[derive(Debug, Clone)]
 pub struct ColumnAttr {

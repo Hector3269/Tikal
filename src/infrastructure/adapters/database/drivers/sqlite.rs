@@ -1,8 +1,6 @@
 use super::DatabaseDriver;
-use crate::infrastructure::types::DbResult;
-use crate::kernel::error::KernelError;
-use crate::kernel::types::core::Value;
-use crate::kernel::types::db::DbRow;
+use crate::infrastructure::types::{DbResult, DbRow, Value};
+use crate::TikalError;
 use async_trait::async_trait;
 use sqlx::{Column, Pool, Row, Sqlite};
 
@@ -13,7 +11,7 @@ impl DatabaseDriver for SQLiteDriver {
     type DB = Sqlite;
 
     async fn connect(&self, url: &str) -> DbResult<Pool<Self::DB>> {
-        Pool::connect(url).await.map_err(KernelError::from)
+        Pool::connect(url).await.map_err(TikalError::from)
     }
 
     async fn execute(&self, pool: &Pool<Self::DB>, sql: &str, params: &[Value]) -> DbResult<()> {
@@ -27,7 +25,7 @@ impl DatabaseDriver for SQLiteDriver {
                 Value::Null => query.bind(None::<String>),
             };
         }
-        query.execute(pool).await.map_err(KernelError::from)?;
+        query.execute(pool).await.map_err(TikalError::from)?;
         Ok(())
     }
 
@@ -47,7 +45,7 @@ impl DatabaseDriver for SQLiteDriver {
                 Value::Null => query.bind(None::<String>),
             };
         }
-        let rows = query.fetch_all(pool).await.map_err(KernelError::from)?;
+        let rows = query.fetch_all(pool).await.map_err(TikalError::from)?;
         let mut result = Vec::new();
         for row in rows {
             let mut db_row = DbRow::new();
@@ -80,12 +78,12 @@ impl DatabaseDriver for SQLiteDriver {
                 + Send,
         >,
     ) -> DbResult<()> {
-        let tx = pool.begin().await.map_err(KernelError::from)?;
+        let tx = pool.begin().await.map_err(TikalError::from)?;
         let result = f().await;
         if result.is_ok() {
-            tx.commit().await.map_err(KernelError::from)?;
+            tx.commit().await.map_err(TikalError::from)?;
         } else {
-            tx.rollback().await.map_err(KernelError::from)?;
+            tx.rollback().await.map_err(TikalError::from)?;
         }
         result
     }

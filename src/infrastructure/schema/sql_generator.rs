@@ -1,5 +1,5 @@
 use super::{Column, Index, Table};
-use crate::kernel::types::schema::ColumnType;
+use crate::infrastructure::core::types::ColumnType;
 
 pub trait SqlGenerator {
     fn create_table(&self, table: &Table) -> String;

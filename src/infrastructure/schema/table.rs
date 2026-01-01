@@ -1,5 +1,5 @@
 use super::{Column, Index};
-use crate::kernel::types::schema::*;
+use crate::infrastructure::core::types::*;
 
 #[derive(Debug, Clone)]
 pub struct Table {

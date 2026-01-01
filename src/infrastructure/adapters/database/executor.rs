@@ -4,10 +4,8 @@ use std::sync::Arc;
 
 use super::drivers::DatabaseDriver;
 use crate::domain::QueryExecutor;
-use crate::infrastructure::types::DbResult;
-use crate::kernel::error::KernelError;
-use crate::kernel::types::core::Value;
-use crate::kernel::types::db::DbRow;
+use crate::infrastructure::types::{DbResult, DbRow, Value};
+use crate::TikalError;
 
 pub struct SqlxQueryExecutor<D: DatabaseDriver> {
     driver: Arc<D>,
@@ -23,11 +21,11 @@ impl<D: DatabaseDriver> SqlxQueryExecutor<D> {
 
 #[async_trait]
 impl<D: DatabaseDriver + Send + Sync> QueryExecutor for SqlxQueryExecutor<D> {
-    async fn execute_raw(&self, sql: &str, params: &[Value]) -> Result<(), KernelError> {
+    async fn execute_raw(&self, sql: &str, params: &[Value]) -> Result<(), TikalError> {
         self.driver.execute(&self.pool, sql, params).await
     }
 
-    async fn query_raw(&self, sql: &str, params: &[Value]) -> Result<Vec<DbRow>, KernelError> {
+    async fn query_raw(&self, sql: &str, params: &[Value]) -> Result<Vec<DbRow>, TikalError> {
         self.driver.query(&self.pool, sql, params).await
     }
 
@@ -35,10 +33,10 @@ impl<D: DatabaseDriver + Send + Sync> QueryExecutor for SqlxQueryExecutor<D> {
         &self,
         f: Box<
             dyn FnOnce() -> std::pin::Pin<
-                    Box<dyn std::future::Future<Output = Result<(), KernelError>> + Send>,
+                    Box<dyn std::future::Future<Output = Result<(), TikalError>> + Send>,
                 > + Send,
         >,
-    ) -> Result<(), KernelError> {
+    ) -> Result<(), TikalError> {
         self.driver.transaction(&self.pool, f).await
     }
 
@@ -47,10 +45,10 @@ impl<D: DatabaseDriver + Send + Sync> QueryExecutor for SqlxQueryExecutor<D> {
         _name: &str,
         f: Box<
             dyn FnOnce() -> std::pin::Pin<
-                    Box<dyn std::future::Future<Output = Result<(), KernelError>> + Send>,
+                    Box<dyn std::future::Future<Output = Result<(), TikalError>> + Send>,
                 > + Send,
         >,
-    ) -> Result<(), KernelError> {
+    ) -> Result<(), TikalError> {
         self.driver.transaction(&self.pool, f).await
     }
 
@@ -58,8 +56,8 @@ impl<D: DatabaseDriver + Send + Sync> QueryExecutor for SqlxQueryExecutor<D> {
         &self,
         sql: &str,
         params: &[Value],
-        callback: Box<dyn Fn(DbRow) -> Result<(), KernelError> + Send + Sync>,
-    ) -> Result<(), KernelError> {
+        callback: Box<dyn Fn(DbRow) -> Result<(), TikalError> + Send + Sync>,
+    ) -> Result<(), TikalError> {
         let rows = self.query_raw(sql, params).await?;
         for row in rows {
             callback(row)?;

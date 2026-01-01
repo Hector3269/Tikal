@@ -1,6 +1,6 @@
 use super::query_builder::QueryBuilder;
 use super::{Operator, WhereCondition};
-use crate::kernel::types::core::Value;
+use crate::infrastructure::core::types::Value;
 
 impl<T> QueryBuilder<T> {
     pub fn where_(mut self, column: &str, operator: Operator, value: impl Into<Value>) -> Self {

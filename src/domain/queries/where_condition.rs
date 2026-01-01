@@ -1,5 +1,5 @@
 use super::operators::Operator;
-use crate::kernel::types::core::Value;
+use crate::infrastructure::core::types::Value;
 
 #[derive(Debug, Clone)]
 pub struct WhereCondition {

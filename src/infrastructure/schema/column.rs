@@ -1,4 +1,4 @@
-use crate::kernel::types::schema::*;
+use crate::infrastructure::core::types::*;
 
 #[derive(Debug, Clone)]
 pub struct Column {

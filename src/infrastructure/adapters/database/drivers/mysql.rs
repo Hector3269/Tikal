@@ -1,8 +1,6 @@
 use super::DatabaseDriver;
-use crate::infrastructure::types::DbResult;
-use crate::kernel::error::KernelError;
-use crate::kernel::types::core::Value;
-use crate::kernel::types::db::DbRow;
+use crate::infrastructure::types::{DbResult, DbRow, Value};
+use crate::TikalError;
 use async_trait::async_trait;
 use sqlx::{Column, MySql, Pool, Row};
 
@@ -27,7 +25,7 @@ impl DatabaseDriver for MySQLDriver {
                 Value::Null => query.bind(None::<String>),
             };
         }
-        query.execute(pool).await.map_err(KernelError::from)?;
+        query.execute(pool).await.map_err(TikalError::from)?;
         Ok(())
     }
 
@@ -47,7 +45,7 @@ impl DatabaseDriver for MySQLDriver {
                 Value::Null => query.bind(None::<String>),
             };
         }
-        let rows = query.fetch_all(pool).await.map_err(KernelError::from)?;
+        let rows = query.fetch_all(pool).await.map_err(TikalError::from)?;
         let mut result = Vec::new();
         for row in rows {
             let mut db_row = DbRow::new();
@@ -80,12 +78,12 @@ impl DatabaseDriver for MySQLDriver {
                 + Send,
         >,
     ) -> DbResult<()> {
-        let tx = pool.begin().await.map_err(KernelError::from)?;
+        let tx = pool.begin().await.map_err(TikalError::from)?;
         let result = f().await;
         if result.is_ok() {
-            tx.commit().await.map_err(KernelError::from)?;
+            tx.commit().await.map_err(TikalError::from)?;
         } else {
-            tx.rollback().await.map_err(KernelError::from)?;
+            tx.rollback().await.map_err(TikalError::from)?;
         }
         result
     }

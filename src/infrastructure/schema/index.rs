@@ -1,4 +1,4 @@
-use crate::kernel::types::schema::IndexName;
+use crate::infrastructure::core::types::IndexName;
 
 #[derive(Debug, Clone)]
 pub struct Index {

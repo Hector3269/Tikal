@@ -1,6 +1,6 @@
 use super::{SchemaBuilder, SqlGenerator};
 use crate::domain::QueryExecutor;
-use crate::infrastructure::types::DbResult;
+use crate::infrastructure::core::types::DbResult;
 
 pub struct ExecutableSchema<G: SqlGenerator> {
     builder: SchemaBuilder,

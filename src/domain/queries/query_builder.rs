@@ -1,8 +1,8 @@
 use super::{Operator, WhereCondition};
 use crate::domain::QueryExecutor;
 use crate::domain::*;
-use crate::kernel::error::KernelError;
-use crate::kernel::types::core::Value;
+use crate::infrastructure::core::types::Value;
+use crate::TikalError;
 use std::marker::PhantomData;
 
 #[derive(Debug, Clone)]
@@ -53,14 +53,14 @@ where
         self
     }
 
-    pub async fn first<E>(self, executor: &E) -> Result<Option<T>, KernelError>
+    pub async fn first<E>(self, executor: &E) -> Result<Option<T>, TikalError>
     where
         E: QueryExecutor,
     {
         Ok(self.limit(1).get(executor).await?.into_iter().next())
     }
 
-    pub async fn get<E>(self, executor: &E) -> Result<Vec<T>, KernelError>
+    pub async fn get<E>(self, executor: &E) -> Result<Vec<T>, TikalError>
     where
         E: QueryExecutor,
     {
