@@ -1,5 +1,7 @@
-pub mod adapters;
-pub mod core;
-pub mod relationships;
+pub mod config;
+pub mod database;
+pub mod drivers;
+pub mod migrations;
+pub mod query_builder;
+pub mod repositories;
 pub mod schema;
-pub mod services;
