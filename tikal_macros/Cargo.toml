@@ -1,0 +1,19 @@
+[package]
+name = "tikal_macros"
+version = "0.1.3"
+edition = "2021"
+description = "Procedural macros for the Tikal ORM library"
+authors = ["Hector3269"]
+repository = "https://github.com/Hector3269/Tikal.git"
+
+[lib]
+name = "tikal_macros"
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+syn = { version = "2.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }

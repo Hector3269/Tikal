@@ -1,13 +1,52 @@
-pub mod builder;
-pub mod column;
-pub mod executable;
-pub mod index;
-pub mod sql_generator;
-pub mod table;
+use crate::domain::value_objects::Value;
 
-pub use builder::SchemaBuilder;
-pub use column::Column;
-pub use executable::ExecutableSchema;
-pub use index::Index;
-pub use sql_generator::SqlGenerator;
-pub use table::Table;
+pub mod builders;
+pub mod generators;
+
+pub use builders::*;
+pub use generators::*;
+
+#[derive(Debug, Clone)]
+pub struct SchemaDefinition {
+    pub tables: Vec<TableDefinition>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TableDefinition {
+    pub name: String,
+    pub columns: Vec<ColumnDefinition>,
+    pub indexes: Vec<IndexDefinition>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ColumnDefinition {
+    pub name: String,
+    pub column_type: ColumnType,
+    pub nullable: bool,
+    pub primary_key: bool,
+    pub auto_increment: bool,
+    pub default_value: Option<Value>,
+    pub unique: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ColumnType {
+    Id, // Generally serial/auto-incrementing BIGINT
+    Text,
+    LongText,
+    Int,
+    BigInt,
+    Float,
+    Bool,
+    DateTime,
+    NaiveDateTime,
+    Json,
+    Binary,
+}
+
+#[derive(Debug, Clone)]
+pub struct IndexDefinition {
+    pub name: String,
+    pub columns: Vec<String>,
+    pub unique: bool,
+}

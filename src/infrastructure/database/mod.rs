@@ -1,5 +1,3 @@
-pub mod drivers;
-pub mod executor;
+pub mod pool;
 
-pub use drivers::*;
-pub use executor::*;
+pub use pool::DatabasePool;

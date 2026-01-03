@@ -1,4 +1,7 @@
-pub mod casts;
-pub mod queries;
-pub mod traits;
-pub use traits::*;
+pub mod error;
+pub mod model;
+pub mod query;
+pub mod repositories;
+pub mod value_objects;
+
+pub use error::{TikalError, TikalResult};
