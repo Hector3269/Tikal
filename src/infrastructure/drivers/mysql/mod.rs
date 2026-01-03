@@ -1,4 +1,4 @@
-use super::traits::QueryExecutor;
+use super::traits::{QueryExecutor, Transaction};
 use crate::domain::value_objects::Value;
 use crate::domain::TikalResult;
 use async_trait::async_trait;
@@ -38,6 +38,74 @@ impl QueryExecutor for MySqlExecutor {
         }
 
         let rows = query.fetch_all(&self.pool).await?;
+        let mut results = Vec::new();
+
+        for row in rows {
+            let mut map = HashMap::new();
+            for column in row.columns() {
+                let name = column.name();
+                let value = map_mysql_row_value(&row, name)?;
+                map.insert(name.to_string(), value);
+            }
+            results.push(map);
+        }
+
+        Ok(results)
+    }
+
+    async fn begin(&self) -> TikalResult<Box<dyn Transaction>> {
+        let tx = self.pool.begin().await?;
+        Ok(Box::new(MySqlTransaction::new(tx)))
+    }
+}
+
+pub struct MySqlTransaction {
+    tx: sqlx::Transaction<'static, sqlx::MySql>,
+}
+
+impl MySqlTransaction {
+    pub fn new(tx: sqlx::Transaction<'static, sqlx::MySql>) -> Self {
+        Self { tx }
+    }
+}
+
+#[async_trait]
+impl Transaction for MySqlTransaction {
+    async fn begin(&self) -> TikalResult<Box<dyn Transaction>> {
+        panic!("Cannot begin transaction on an existing transaction")
+    }
+
+    async fn commit(self: Box<Self>) -> TikalResult<()> {
+        self.tx.commit().await?;
+        Ok(())
+    }
+
+    async fn rollback(self: Box<Self>) -> TikalResult<()> {
+        self.tx.rollback().await?;
+        Ok(())
+    }
+
+    async fn execute(&mut self, sql: &str, params: Vec<Value>) -> TikalResult<u64> {
+        let mut query = sqlx::query(sql);
+        for param in params {
+            query = bind_mysql_param(query, param);
+        }
+
+        let result = query.execute(&mut *self.tx).await?;
+        Ok(result.rows_affected())
+    }
+
+    async fn fetch_all(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> TikalResult<Vec<HashMap<String, Value>>> {
+        let mut query = sqlx::query(sql);
+        for param in params {
+            query = bind_mysql_param(query, param);
+        }
+
+        let rows = query.fetch_all(&mut *self.tx).await?;
         let mut results = Vec::new();
 
         for row in rows {
