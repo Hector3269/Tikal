@@ -1,4 +1,5 @@
 use crate::domain::query::builder::QueryBuilder;
+use crate::domain::repositories::executor::QueryExecutor;
 use crate::domain::TikalResult;
 use crate::infrastructure::query_builder::generators::SqlGeneratorEnum;
 use std::collections::HashMap;
@@ -27,7 +28,7 @@ pub trait Entity: Sized + FromRow + Send + Sync {
     fn eager_load(
         _entities: &mut [Self],
         _relation: &str,
-        _executor: &dyn crate::infrastructure::drivers::traits::QueryExecutor,
+        _executor: &dyn QueryExecutor,
         _generator: &SqlGeneratorEnum,
     ) -> impl std::future::Future<Output = TikalResult<()>> + Send {
         async { Ok(()) }

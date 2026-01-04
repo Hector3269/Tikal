@@ -1,4 +1,5 @@
 pub mod executor;
+pub mod types;
 
 use crate::domain::model::Entity;
 use crate::domain::query::builder::QueryBuilder;

@@ -1,9 +1,8 @@
 use crate::domain::model::Entity;
 use crate::domain::query::builder::{Operator, QueryBuilder};
-use crate::domain::repositories::Repository;
+use crate::domain::repositories::{executor::QueryExecutor, Repository};
 use crate::domain::value_objects::Value;
 use crate::domain::TikalResult;
-use crate::infrastructure::drivers::traits::QueryExecutor;
 use crate::infrastructure::query_builder::generators::{SqlGenerator, SqlGeneratorEnum};
 use async_trait::async_trait;
 use std::marker::PhantomData;

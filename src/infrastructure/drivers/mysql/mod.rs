@@ -1,4 +1,6 @@
 use super::traits::{QueryExecutor, Transaction};
+use crate::domain::repositories::executor::{QueryExecutor as DomainQueryExecutor, Transaction as DomainTransaction};
+use crate::domain::repositories::types::{DriverInfo, DriverType};
 use crate::domain::value_objects::Value;
 use crate::domain::TikalResult;
 use async_trait::async_trait;
@@ -56,6 +58,65 @@ impl QueryExecutor for MySqlExecutor {
     async fn begin(&self) -> TikalResult<Box<dyn Transaction>> {
         let tx = self.pool.begin().await?;
         Ok(Box::new(MySqlTransaction::new(tx)))
+    }
+}
+
+#[async_trait]
+impl DomainQueryExecutor for MySqlExecutor {
+    async fn fetch_all(
+        &self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> TikalResult<Vec<HashMap<String, Value>>> {
+        <Self as QueryExecutor>::fetch_all(self, sql, params).await
+    }
+
+    async fn fetch_one(&self, sql: &str, params: Vec<Value>) -> TikalResult<HashMap<String, Value>> {
+        let results = <Self as super::traits::QueryExecutor>::fetch_all(self, sql, params).await?;
+        results.into_iter().next().ok_or_else(|| {
+            crate::domain::error::TikalError::database_error(
+                "No rows returned",
+                "Expected exactly one row but got none",
+                None,
+            )
+        })
+    }
+
+    async fn fetch_optional(
+        &self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> TikalResult<Option<HashMap<String, Value>>> {
+        let results = <Self as super::traits::QueryExecutor>::fetch_all(self, sql, params).await?;
+        Ok(results.into_iter().next())
+    }
+
+    async fn execute(&self, sql: &str, params: Vec<Value>) -> TikalResult<u64> {
+        <Self as super::traits::QueryExecutor>::execute(self, sql, params).await
+    }
+
+    async fn execute_with_rows(&self, sql: &str, params: Vec<Value>) -> TikalResult<u64> {
+        <Self as super::traits::QueryExecutor>::execute(self, sql, params).await
+    }
+
+    async fn begin_transaction(&self) -> TikalResult<Box<dyn DomainTransaction>> {
+        let tx = self.pool.begin().await?;
+        Ok(Box::new(MySqlTransaction::new(tx)))
+    }
+
+    async fn ping(&self) -> TikalResult<bool> {
+        match sqlx::query("SELECT 1").execute(&self.pool).await {
+            Ok(_) => Ok(true),
+            Err(_) => Ok(false),
+        }
+    }
+
+    fn driver_info(&self) -> DriverInfo {
+        DriverInfo {
+            name: "MySQL".to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            driver_type: DriverType::MySQL,
+        }
     }
 }
 
@@ -119,6 +180,53 @@ impl Transaction for MySqlTransaction {
         }
 
         Ok(results)
+    }
+}
+
+#[async_trait]
+impl DomainTransaction for MySqlTransaction {
+    async fn fetch_all(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> TikalResult<Vec<HashMap<String, Value>>> {
+        <Self as Transaction>::fetch_all(self, sql, params).await
+    }
+
+    async fn fetch_one(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> TikalResult<HashMap<String, Value>> {
+        let results = <Self as Transaction>::fetch_all(self, sql, params).await?;
+        results.into_iter().next().ok_or_else(|| {
+            crate::domain::error::TikalError::database_error(
+                "No rows returned",
+                "Expected exactly one row but got none",
+                None,
+            )
+        })
+    }
+
+    async fn fetch_optional(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> TikalResult<Option<HashMap<String, Value>>> {
+        let results = <Self as Transaction>::fetch_all(self, sql, params).await?;
+        Ok(results.into_iter().next())
+    }
+
+    async fn execute(&mut self, sql: &str, params: Vec<Value>) -> TikalResult<u64> {
+        <Self as Transaction>::execute(self, sql, params).await
+    }
+
+    async fn commit(self: Box<Self>) -> TikalResult<()> {
+        <Self as Transaction>::commit(self).await
+    }
+
+    async fn rollback(self: Box<Self>) -> TikalResult<()> {
+        <Self as Transaction>::rollback(self).await
     }
 }
 
