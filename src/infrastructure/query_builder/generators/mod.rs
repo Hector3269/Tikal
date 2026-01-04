@@ -1,9 +1,10 @@
+pub mod base;
 pub mod common;
-pub mod databases;
-pub mod r#enum;
-pub mod r#trait;
+pub mod config;
+pub mod generator_enum;
+pub mod sql_generator;
 
-pub use common::CommonGenerator;
-pub use databases::{MySqlGenerator, PostgresGenerator, SqliteGenerator};
-pub use r#enum::SqlGeneratorEnum;
-pub use r#trait::SqlGenerator;
+pub use base::BaseGenerator;
+pub use config::{GeneratorConfig, TypeMapper};
+pub use generator_enum::{MySqlGenerator, PostgresGenerator, SqlGeneratorEnum, SqliteGenerator};
+pub use sql_generator::SqlGenerator;

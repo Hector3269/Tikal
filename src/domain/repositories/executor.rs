@@ -12,14 +12,29 @@ pub trait QueryExecutor: Send + Sync {
         params: Vec<Value>,
     ) -> TikalResult<Vec<HashMap<String, Value>>>;
 
-    async fn fetch_one(&self, sql: &str, params: Vec<Value>)
-        -> TikalResult<HashMap<String, Value>>;
+    async fn fetch_one(
+        &self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> TikalResult<HashMap<String, Value>> {
+        let results = self.fetch_all(sql, params).await?;
+        results.into_iter().next().ok_or_else(|| {
+            crate::domain::error::TikalError::database_error(
+                "No rows returned",
+                "Expected exactly one row but got none",
+                None,
+            )
+        })
+    }
 
     async fn fetch_optional(
         &self,
         sql: &str,
         params: Vec<Value>,
-    ) -> TikalResult<Option<HashMap<String, Value>>>;
+    ) -> TikalResult<Option<HashMap<String, Value>>> {
+        let results = self.fetch_all(sql, params).await?;
+        Ok(results.into_iter().next())
+    }
 
     async fn execute(&self, sql: &str, params: Vec<Value>) -> TikalResult<u64>;
 
@@ -33,7 +48,7 @@ pub trait QueryExecutor: Send + Sync {
 }
 
 #[async_trait]
-pub trait Transaction: Send + Sync {
+pub trait Transaction: Send {
     async fn fetch_all(
         &mut self,
         sql: &str,
@@ -44,13 +59,25 @@ pub trait Transaction: Send + Sync {
         &mut self,
         sql: &str,
         params: Vec<Value>,
-    ) -> TikalResult<HashMap<String, Value>>;
+    ) -> TikalResult<HashMap<String, Value>> {
+        let results = self.fetch_all(sql, params).await?;
+        results.into_iter().next().ok_or_else(|| {
+            crate::domain::error::TikalError::database_error(
+                "No rows returned",
+                "Expected exactly one row but got none",
+                None,
+            )
+        })
+    }
 
     async fn fetch_optional(
         &mut self,
         sql: &str,
         params: Vec<Value>,
-    ) -> TikalResult<Option<HashMap<String, Value>>>;
+    ) -> TikalResult<Option<HashMap<String, Value>>> {
+        let results = self.fetch_all(sql, params).await?;
+        Ok(results.into_iter().next())
+    }
 
     async fn execute(&mut self, sql: &str, params: Vec<Value>) -> TikalResult<u64>;
 

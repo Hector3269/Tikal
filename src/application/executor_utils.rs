@@ -9,8 +9,8 @@ pub async fn execute_batch<E: QueryExecutor>(
     let mut results = Vec::new();
 
     for (sql, params) in queries {
-        let rows_affected = executor.execute(&sql, params).await?;
-        results.push(rows_affected);
+        let rows = executor.execute(&sql, params).await?;
+        results.push(rows);
     }
 
     Ok(results)
@@ -26,7 +26,7 @@ pub async fn execute_with_retry<E: QueryExecutor>(
 
     for attempt in 0..=max_retries {
         match executor.execute(sql, params.clone()).await {
-            Ok(result) => return Ok(result),
+            Ok(rows) => return Ok(rows),
             Err(e) => {
                 last_error = Some(e);
                 if attempt < max_retries {
@@ -40,9 +40,6 @@ pub async fn execute_with_retry<E: QueryExecutor>(
     }
 
     Err(last_error.unwrap_or_else(|| {
-        crate::domain::error::TikalError::internal_error(
-            "Unexpected error in retry logic",
-            None,
-        )
+        crate::domain::error::TikalError::internal_error("Unexpected error in retry logic", None)
     }))
 }

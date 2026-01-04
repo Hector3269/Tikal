@@ -29,6 +29,48 @@ where
             _phantom: PhantomData,
         }
     }
+
+    #[allow(dead_code)]
+    fn is_new_entity(&self, entity: &E) -> bool {
+        let values = entity.to_values();
+        let pk = E::primary_key();
+        !values.contains_key(pk) || matches!(values[pk], Value::Null)
+    }
+
+    #[allow(dead_code)]
+    async fn save_improved(&self, entity: &E) -> TikalResult<u64> {
+        if self.is_new_entity(entity) {
+            let (sql, params) = self.generator.generate_insert(entity);
+            self.executor.execute(&sql, params).await
+        } else {
+            let (sql, params) = self.generator.generate_update(entity);
+            self.executor.execute(&sql, params).await
+        }
+    }
+
+    async fn execute_aggregate_query<F>(
+        &self,
+        generate_sql: F,
+        column_keys: &[&str],
+    ) -> TikalResult<Option<Value>>
+    where
+        F: FnOnce() -> (String, Vec<Value>),
+    {
+        let (sql, params) = generate_sql();
+        let rows = self.executor.fetch_all(&sql, params).await?;
+        if let Some(row) = rows.into_iter().next() {
+            for key in column_keys {
+                if let Some(value) = row.get(*key) {
+                    return Ok(Some(value.clone()));
+                }
+            }
+            return Err(crate::domain::error::TikalError::mapping(
+                &column_keys[0],
+                &format!("missing column: {:?}", column_keys),
+            ));
+        }
+        Ok(None)
+    }
 }
 
 #[async_trait]
@@ -140,105 +182,74 @@ where
     }
 
     async fn count(&self, query: QueryBuilder<E>) -> TikalResult<i64> {
-        let (sql, params) = self.generator.generate_count(&query);
-        let rows = self.executor.fetch_all(&sql, params).await?;
-        if let Some(row) = rows.into_iter().next() {
-            let count_value = row
-                .get("count")
-                .or_else(|| row.get("COUNT(*)"))
-                .ok_or_else(|| {
-                    crate::domain::error::TikalError::mapping("count", "missing count column")
-                })?;
-            match count_value {
-                crate::domain::value_objects::Value::Int(i) => Ok(*i),
-                _ => Err(crate::domain::error::TikalError::mapping(
-                    "count",
-                    "count is not int",
-                )),
-            }
-        } else {
-            Ok(0)
+        let result = self
+            .execute_aggregate_query(
+                || self.generator.generate_count(&query),
+                &["count", "COUNT(*)"],
+            )
+            .await?;
+        match result {
+            Some(Value::Int(i)) => Ok(i),
+            Some(_) => Err(crate::domain::error::TikalError::mapping(
+                "count",
+                "count is not int",
+            )),
+            None => Ok(0),
         }
     }
 
     async fn sum(&self, query: QueryBuilder<E>, field: &str) -> TikalResult<Option<f64>> {
-        let (sql, params) = self.generator.generate_sum(&query, field);
-        let rows = self.executor.fetch_all(&sql, params).await?;
-        if let Some(row) = rows.into_iter().next() {
-            let sum_value = row
-                .get("sum")
-                .or_else(|| row.get(&format!("SUM({})", field)))
-                .ok_or_else(|| {
-                    crate::domain::error::TikalError::mapping("sum", "missing sum column")
-                })?;
-            match sum_value {
-                crate::domain::value_objects::Value::Float(f) => Ok(Some(f.into_inner())),
-                crate::domain::value_objects::Value::Int(i) => Ok(Some(*i as f64)),
-                crate::domain::value_objects::Value::Null => Ok(None),
-                _ => Err(crate::domain::error::TikalError::mapping(
-                    "sum",
-                    "sum is not numeric",
-                )),
-            }
-        } else {
-            Ok(None)
+        let result = self
+            .execute_aggregate_query(
+                || self.generator.generate_sum(&query, field),
+                &["sum", &format!("SUM({})", field)],
+            )
+            .await?;
+        match result {
+            Some(Value::Float(f)) => Ok(Some(f.into_inner())),
+            Some(Value::Int(i)) => Ok(Some(i as f64)),
+            Some(Value::Null) => Ok(None),
+            Some(_) => Err(crate::domain::error::TikalError::mapping(
+                "sum",
+                "sum is not numeric",
+            )),
+            None => Ok(None),
         }
     }
 
     async fn avg(&self, query: QueryBuilder<E>, field: &str) -> TikalResult<Option<f64>> {
-        let (sql, params) = self.generator.generate_avg(&query, field);
-        let rows = self.executor.fetch_all(&sql, params).await?;
-        if let Some(row) = rows.into_iter().next() {
-            let avg_value = row
-                .get("avg")
-                .or_else(|| row.get(&format!("AVG({})", field)))
-                .ok_or_else(|| {
-                    crate::domain::error::TikalError::mapping("avg", "missing avg column")
-                })?;
-            match avg_value {
-                crate::domain::value_objects::Value::Float(f) => Ok(Some(f.into_inner())),
-                crate::domain::value_objects::Value::Int(i) => Ok(Some(*i as f64)),
-                crate::domain::value_objects::Value::Null => Ok(None),
-                _ => Err(crate::domain::error::TikalError::mapping(
-                    "avg",
-                    "avg is not numeric",
-                )),
-            }
-        } else {
-            Ok(None)
+        let result = self
+            .execute_aggregate_query(
+                || self.generator.generate_avg(&query, field),
+                &["avg", &format!("AVG({})", field)],
+            )
+            .await?;
+        match result {
+            Some(Value::Float(f)) => Ok(Some(f.into_inner())),
+            Some(Value::Int(i)) => Ok(Some(i as f64)),
+            Some(Value::Null) => Ok(None),
+            Some(_) => Err(crate::domain::error::TikalError::mapping(
+                "avg",
+                "avg is not numeric",
+            )),
+            None => Ok(None),
         }
     }
 
     async fn min(&self, query: QueryBuilder<E>, field: &str) -> TikalResult<Option<Value>> {
-        let (sql, params) = self.generator.generate_min(&query, field);
-        let rows = self.executor.fetch_all(&sql, params).await?;
-        if let Some(row) = rows.into_iter().next() {
-            let min_value = row
-                .get("min")
-                .or_else(|| row.get(&format!("MIN({})", field)))
-                .ok_or_else(|| {
-                    crate::domain::error::TikalError::mapping("min", "missing min column")
-                })?;
-            Ok(Some(min_value.clone()))
-        } else {
-            Ok(None)
-        }
+        self.execute_aggregate_query(
+            || self.generator.generate_min(&query, field),
+            &["min", &format!("MIN({})", field)],
+        )
+        .await
     }
 
     async fn max(&self, query: QueryBuilder<E>, field: &str) -> TikalResult<Option<Value>> {
-        let (sql, params) = self.generator.generate_max(&query, field);
-        let rows = self.executor.fetch_all(&sql, params).await?;
-        if let Some(row) = rows.into_iter().next() {
-            let max_value = row
-                .get("max")
-                .or_else(|| row.get(&format!("MAX({})", field)))
-                .ok_or_else(|| {
-                    crate::domain::error::TikalError::mapping("max", "missing max column")
-                })?;
-            Ok(Some(max_value.clone()))
-        } else {
-            Ok(None)
-        }
+        self.execute_aggregate_query(
+            || self.generator.generate_max(&query, field),
+            &["max", &format!("MAX({})", field)],
+        )
+        .await
     }
 
     async fn save_many(&self, entities: &[E]) -> TikalResult<u64> {
