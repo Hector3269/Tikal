@@ -35,7 +35,11 @@ pub struct Condition {
 
 pub struct QueryBuilder<E: Entity> {
     pub table_name: String,
+    pub selected_columns: Vec<String>,
+    pub distinct: bool,
     pub filters: Vec<Condition>,
+    pub group_by: Vec<String>,
+    pub having_filters: Vec<Condition>,
     pub order_by: Vec<OrderBy>,
     pub limit: Option<usize>,
     pub offset: Option<usize>,
@@ -47,7 +51,11 @@ impl<E: Entity> QueryBuilder<E> {
     pub fn new() -> Self {
         Self {
             table_name: E::table_name().to_string(),
+            selected_columns: Vec::new(),
+            distinct: false,
             filters: Vec::new(),
+            group_by: Vec::new(),
+            having_filters: Vec::new(),
             order_by: Vec::new(),
             limit: None,
             offset: None,
@@ -110,6 +118,11 @@ impl<E: Entity> QueryBuilder<E> {
         self
     }
 
+    pub fn offset(mut self, offset: usize) -> Self {
+        self.offset = Some(offset);
+        self
+    }
+
     pub fn with(mut self, relation: &str) -> Self {
         self.with_relations.push(relation.to_string());
         self
@@ -145,6 +158,39 @@ impl<E: Entity> QueryBuilder<E> {
     {
         let column = E::field_to_column(field).unwrap_or_else(|| field.to_string());
         self.order_by.push(OrderBy { column, direction });
+        self
+    }
+
+    pub fn select(mut self, columns: &[&str]) -> Self {
+        self.selected_columns = columns.iter().map(|s| s.to_string()).collect();
+        self
+    }
+
+    pub fn distinct(mut self) -> Self {
+        self.distinct = true;
+        self
+    }
+
+    pub fn group_by(mut self, columns: &[&str]) -> Self {
+        self.group_by = columns.iter().map(|s| s.to_string()).collect();
+        self
+    }
+
+    pub fn having(mut self, column: &str, operator: Operator, value: impl Into<Value>) -> Self {
+        self.having_filters.push(Condition {
+            column: column.to_string(),
+            operator,
+            values: vec![value.into()],
+        });
+        self
+    }
+
+    pub fn having_in(mut self, column: &str, values: Vec<Value>) -> Self {
+        self.having_filters.push(Condition {
+            column: column.to_string(),
+            operator: Operator::In,
+            values,
+        });
         self
     }
 
