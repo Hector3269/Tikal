@@ -3,8 +3,9 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white" alt="Rust"/>
   <img src="https://img.shields.io/badge/SQLx-2D3748?style=for-the-badge&logo=postgresql&logoColor=white" alt="SQLx"/>
-  <img src="https://img.shields.io/badge/PyO3-306998?style=for-the-badge&logo=python&logoColor=white" alt="PyO3"/>
+ 
   <img src="https://img.shields.io/badge/Async--Trait-000000?style=for-the-badge&logo=rust&logoColor=white" alt="Async Trait"/>
+  <a href="https://deepwiki.com/Hector3269/Tikal"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
   <br>
   <img src="https://img.shields.io/badge/Version-0.1.0-blue?style=for-the-badge" alt="Version"/>
   <img src="https://img.shields.io/badge/Status-Work%20in%20Progress-orange?style=for-the-badge" alt="Work in Progress"/>
