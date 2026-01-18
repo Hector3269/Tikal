@@ -23,9 +23,8 @@
 |------------|---------|
 | ![Rust](https://img.shields.io/badge/Rust-000000?style=flat&logo=rust&logoColor=white) | Primary programming language with async/await support |
 | ![SQLx](https://img.shields.io/badge/SQLx-2D3748?style=flat&logo=postgresql&logoColor=white) | Async SQL toolkit for compile-time verified queries |
-| ![Async Trait](https://img.shields.io/badge/Async--Trait-000000?style=flat&logo=rust&logoColor=white) | Ergonomic async traits in Rust |
-| ![PyO3](https://img.shields.io/badge/PyO3-306998?style=flat&logo=python&logoColor=white) | Rust bindings for Python |
-| ![Tokio](https://img.shields.io/badge/Tokio-000000?style=flat&logo=rust&logoColor=white) | Async runtime for Rust |
+| ![Async Trait](https://img.shields.io/badge/Async--Trait-000000?style=flat&logo=rust&logoColor=white) | Ergonomic async traits in Rust 
+|![Tokio](https://img.shields.io/badge/Tokio-000000?style=flat&logo=rust&logoColor=white) | Async runtime for Rust |
 | ![Serde](https://img.shields.io/badge/Serde-000000?style=flat&logo=rust&logoColor=white) | Serialization framework for Rust |
 | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white) | MySQL database driver |
 | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white) | PostgreSQL database driver |
