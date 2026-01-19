@@ -1,20 +1,31 @@
-<h1 align="center" > Tikal</h1> 
+<h1 align="center"> Tikal</h1> 
 
 <div align="center">
   <img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white" alt="Rust"/>
   <img src="https://img.shields.io/badge/SQLx-2D3748?style=for-the-badge&logo=postgresql&logoColor=white" alt="SQLx"/>
- 
   <img src="https://img.shields.io/badge/Async--Trait-000000?style=for-the-badge&logo=rust&logoColor=white" alt="Async Trait"/>
-  <a href="https://deepwiki.com/Hector3269/Tikal"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+  <a href="https://deepwiki.com/Hector3269/Tikal">
+    <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+  </a>
   <br>
-  <img src="https://img.shields.io/badge/Version-0.1.0-blue?style=for-the-badge" alt="Version"/>
+  <a href="https://crates.io/crates/tikal">
+    <img src="https://img.shields.io/crates/v/tikal?style=for-the-badge" alt="Crates.io version"/>
+  </a>
   <img src="https://img.shields.io/badge/Status-Work%20in%20Progress-orange?style=for-the-badge" alt="Work in Progress"/>
 </div>
 
 <p align="center">
-  <strong>A personal experiment to create an ORM in Rust inspired by Laravel, with Python integration, focused on learning, testing ideas and gradually building a solid foundation for my own project, without commercial aspirations and with a lot of technical curiosity.</strong>
+  <strong>
+    A personal experiment to create an ORM in Rust inspired by Laravel, with Python integration,
+    focused on learning, testing ideas and gradually building a solid foundation for my own project,
+    without commercial aspirations and with a lot of technical curiosity.
+  </strong>
 </p>
 
+
+[![Docs.rs](https://img.shields.io/docsrs/tikal)](https://docs.rs/tikal)
+[![Downloads](https://img.shields.io/crates/d/tikal)](https://crates.io/crates/tikal)
+[![License](https://img.shields.io/crates/l/tikal)](https://crates.io/crates/tikal)
 
 
 ## Technologies Use

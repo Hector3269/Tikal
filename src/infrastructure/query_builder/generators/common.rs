@@ -7,7 +7,7 @@ pub struct CommonGenerator;
 
 impl CommonGenerator {
     pub fn generate_select<G: SqlGenerator + ?Sized>(
-        gen: &G,
+        generator: &G,
         query: &SelectQuery,
     ) -> (String, Vec<Value>) {
         let mut sql = String::from("SELECT ");
@@ -20,12 +20,12 @@ impl CommonGenerator {
         let columns: Vec<String> = query
             .columns
             .iter()
-            .map(|e| Self::expression_to_sql(gen, e))
+            .map(|e| Self::expression_to_sql(generator, e))
             .collect();
         sql.push_str(&columns.join(", "));
 
         sql.push_str(" FROM ");
-        sql.push_str(&gen.quote_identifier(&query.table));
+        sql.push_str(&generator.quote_identifier(&query.table));
 
         for join in &query.joins {
             let join_type = match join.join_type {
@@ -37,9 +37,9 @@ impl CommonGenerator {
             sql.push_str(&format!(
                 " {} {} ON ",
                 join_type,
-                gen.quote_identifier(&join.table)
+                generator.quote_identifier(&join.table)
             ));
-            let cond_sql = Self::condition_to_sql(gen, &join.on, &mut params);
+            let cond_sql = Self::condition_to_sql(generator, &join.on, &mut params);
             sql.push_str(&cond_sql);
         }
 
@@ -47,7 +47,7 @@ impl CommonGenerator {
             sql.push_str(" WHERE ");
             let mut filter_sqls = Vec::new();
             for filter in &query.filters {
-                filter_sqls.push(Self::condition_to_sql(gen, filter, &mut params));
+                filter_sqls.push(Self::condition_to_sql(generator, filter, &mut params));
             }
             sql.push_str(&filter_sqls.join(" AND "));
         }
@@ -57,7 +57,7 @@ impl CommonGenerator {
             let groups: Vec<String> = query
                 .group_by
                 .iter()
-                .map(|e| Self::expression_to_sql(gen, e))
+                .map(|e| Self::expression_to_sql(generator, e))
                 .collect();
             sql.push_str(&groups.join(", "));
         }
@@ -72,7 +72,7 @@ impl CommonGenerator {
                         OrderDirection::Asc => "ASC",
                         OrderDirection::Desc => "DESC",
                     };
-                    format!("{} {}", Self::expression_to_sql(gen, &o.expression), dir)
+                    format!("{} {}", Self::expression_to_sql(generator, &o.expression), dir)
                 })
                 .collect();
             sql.push_str(&orders.join(", "));
@@ -82,7 +82,7 @@ impl CommonGenerator {
             sql.push_str(" HAVING ");
             let mut filter_sqls = Vec::new();
             for filter in &query.having {
-                filter_sqls.push(Self::condition_to_sql(gen, filter, &mut params));
+                filter_sqls.push(Self::condition_to_sql(generator, filter, &mut params));
             }
             sql.push_str(&filter_sqls.join(" AND "));
         }
@@ -99,21 +99,21 @@ impl CommonGenerator {
     }
 
     pub fn generate_insert<G: SqlGenerator + ?Sized>(
-        gen: &G,
+        generator: &G,
         query: &InsertQuery,
     ) -> (String, Vec<Value>) {
         let columns: Vec<String> = query
             .columns
             .iter()
-            .map(|c| gen.quote_identifier(c))
+            .map(|c| generator.quote_identifier(c))
             .collect();
         let placeholders: Vec<String> = (0..query.columns.len())
-            .map(|i| gen.placeholder(i))
+            .map(|i| generator.placeholder(i))
             .collect();
 
         let sql = format!(
             "INSERT INTO {} ({}) VALUES ({})",
-            gen.quote_identifier(&query.table),
+            generator.quote_identifier(&query.table),
             columns.join(", "),
             placeholders.join(", ")
         );
@@ -122,7 +122,7 @@ impl CommonGenerator {
     }
 
     pub fn generate_update<G: SqlGenerator + ?Sized>(
-        gen: &G,
+        generator: &G,
         query: &UpdateQuery,
     ) -> (String, Vec<Value>) {
         let mut params = Vec::new();
@@ -131,15 +131,15 @@ impl CommonGenerator {
         for (i, (col, val)) in query.assignments.iter().enumerate() {
             assignments.push(format!(
                 "{} = {}",
-                gen.quote_identifier(col),
-                gen.placeholder(i)
+                generator.quote_identifier(col),
+                generator.placeholder(i)
             ));
             params.push(val.clone());
         }
 
         let mut sql = format!(
             "UPDATE {} SET {}",
-            gen.quote_identifier(&query.table),
+            generator.quote_identifier(&query.table),
             assignments.join(", ")
         );
 
@@ -147,7 +147,7 @@ impl CommonGenerator {
             sql.push_str(" WHERE ");
             let mut filter_sqls = Vec::new();
             for filter in &query.filters {
-                filter_sqls.push(Self::condition_to_sql(gen, filter, &mut params));
+                filter_sqls.push(Self::condition_to_sql(generator, filter, &mut params));
             }
             sql.push_str(&filter_sqls.join(" AND "));
         }
@@ -156,17 +156,17 @@ impl CommonGenerator {
     }
 
     pub fn generate_delete<G: SqlGenerator + ?Sized>(
-        gen: &G,
+        generator: &G,
         query: &DeleteQuery,
     ) -> (String, Vec<Value>) {
         let mut params = Vec::new();
-        let mut sql = format!("DELETE FROM {}", gen.quote_identifier(&query.table));
+        let mut sql = format!("DELETE FROM {}", generator.quote_identifier(&query.table));
 
         if !query.filters.is_empty() {
             sql.push_str(" WHERE ");
             let mut filter_sqls = Vec::new();
             for filter in &query.filters {
-                filter_sqls.push(Self::condition_to_sql(gen, filter, &mut params));
+                filter_sqls.push(Self::condition_to_sql(generator, filter, &mut params));
             }
             sql.push_str(&filter_sqls.join(" AND "));
         }
@@ -174,27 +174,27 @@ impl CommonGenerator {
         (sql, params)
     }
 
-    fn expression_to_sql<G: SqlGenerator + ?Sized>(gen: &G, expr: &Expression) -> String {
+    fn expression_to_sql<G: SqlGenerator + ?Sized>(generator: &G, expr: &Expression) -> String {
         match expr {
             Expression::Column(col) => {
                 if col == "*" {
                     "*".to_string()
                 } else {
-                    gen.quote_identifier(col)
+                    generator.quote_identifier(col)
                 }
             }
             Expression::QualifiedColumn(table, col) => {
                 format!(
                     "{}.{}",
-                    gen.quote_identifier(table),
-                    gen.quote_identifier(col)
+                    generator.quote_identifier(table),
+                    generator.quote_identifier(col)
                 )
             }
             Expression::Literal(val) => val.to_string(),
             Expression::Function(name, args) => {
                 let arg_sqls: Vec<String> = args
                     .iter()
-                    .map(|e| Self::expression_to_sql(gen, e))
+                    .map(|e| Self::expression_to_sql(generator, e))
                     .collect();
                 format!("{}({})", name, arg_sqls.join(", "))
             }
@@ -202,11 +202,11 @@ impl CommonGenerator {
     }
 
     fn condition_to_sql<G: SqlGenerator + ?Sized>(
-        gen: &G,
+        generator: &G,
         cond: &Condition,
         params: &mut Vec<Value>,
     ) -> String {
-        let left = Self::expression_to_sql(gen, &cond.left);
+        let left = Self::expression_to_sql(generator, &cond.left);
         let op = match cond.operator {
             Operator::Eq => "=",
             Operator::Ne => "!=",
@@ -222,7 +222,7 @@ impl CommonGenerator {
             let mut placeholders = Vec::new();
             for expr in &cond.right {
                 if let Expression::Literal(val) = expr {
-                    placeholders.push(gen.placeholder(params.len()));
+                    placeholders.push(generator.placeholder(params.len()));
                     params.push(val.clone());
                 }
             }
@@ -232,9 +232,9 @@ impl CommonGenerator {
                 match expr {
                     Expression::Literal(val) => {
                         params.push(val.clone());
-                        gen.placeholder(params.len() - 1)
+                        generator.placeholder(params.len() - 1)
                     }
-                    _ => Self::expression_to_sql(gen, expr),
+                    _ => Self::expression_to_sql(generator, expr),
                 }
             } else {
                 "NULL".to_string()
