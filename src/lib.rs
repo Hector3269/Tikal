@@ -25,4 +25,5 @@ pub mod prelude {
     pub use crate::domain::value_objects::{FromValue, Value};
     pub use crate::domain::{TikalError, TikalResult};
     pub use crate::infrastructure::repositories::SqlRepository;
+    pub use tikal_macros::*;
 }

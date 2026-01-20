@@ -1,0 +1,7 @@
+[package]
+name = "test_users"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tikal = "0.1.3"
