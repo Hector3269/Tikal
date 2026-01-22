@@ -19,7 +19,7 @@ pub async fn init() -> Result<application::TikalApp, Box<dyn std::error::Error>>
 
 pub mod prelude {
     pub use crate::application::TikalApp;
-    pub use crate::domain::model::{ActiveModel, Entity, FromRow, Lazy, Validate};
+    pub use crate::domain::model::{ActiveModel, Entity, FromRow, Lazy, ModelMapping, Validate};
     pub use crate::domain::query::builder::{Operator, OrderDirection, QueryBuilder};
     pub use crate::domain::repositories::Repository;
     pub use crate::domain::value_objects::{FromValue, Value};

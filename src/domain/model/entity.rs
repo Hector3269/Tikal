@@ -2,6 +2,7 @@ use crate::domain::query::builder::QueryBuilder;
 use crate::domain::query_generator::QueryGenerator;
 use crate::domain::repositories::executor::QueryExecutor;
 use crate::domain::TikalResult;
+use crate::infrastructure::schema::types::TableDefinition;
 use std::collections::HashMap;
 
 pub trait ModelMapping {
@@ -37,6 +38,10 @@ pub trait Entity: Sized + FromRow + Send + Sync {
     fn primary_key() -> &'static str {
         "id"
     }
+
+    fn table_definition() -> TableDefinition;
+
+    fn generate_create_table_sql(driver: &str) -> String;
 
     fn find() -> QueryBuilder<Self> {
         QueryBuilder::new()

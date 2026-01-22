@@ -4,6 +4,7 @@ use crate::domain::{query::builder::QueryBuilder, TikalResult};
 use crate::infrastructure::database::DatabasePool;
 use crate::infrastructure::query_builder::generators::SqlGeneratorEnum;
 use crate::infrastructure::repositories::SqlRepository;
+use crate::infrastructure::schema::generators::{UnifiedDdlGenerator, DdlGenerator};
 
 #[cfg(feature = "mysql")]
 use crate::infrastructure::drivers::mysql::MySqlExecutor;
@@ -177,6 +178,15 @@ impl TikalApp {
                 let executor = SqliteExecutor::new((**pool).clone());
                 executor.ping().await
             }
+        }
+    }
+
+    pub fn generate_create_table_sql<E: Entity>(&self) -> String {
+        let table_def = E::table_definition();
+        match &self.pool {
+            DatabasePool::MySql(_) => UnifiedDdlGenerator::mysql().generate_create_table(&table_def),
+            DatabasePool::Postgres(_) => UnifiedDdlGenerator::postgres().generate_create_table(&table_def),
+            DatabasePool::Sqlite(_) => UnifiedDdlGenerator::sqlite().generate_create_table(&table_def),
         }
     }
 
