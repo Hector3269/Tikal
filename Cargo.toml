@@ -1,41 +1,17 @@
-[package]
-name = "tikal"
+[workspace]
+resolver = "2"
+members = [
+  "tikal",
+  "tikal-macros",
+  "tikal-mariadb",
+  "tikal-postgres",
+  "tikal-sqlite",
+]
+[workspace.package]
 version = "0.1.3"
 edition = "2024"
 description = "A Rust ORM library for building database-driven applications"
-authors = ["Hector3269"]
+authors = ["Hector3269 <danielramirezr27@gmail.com>"]
 repository = "https://github.com/Hector3269/Tikal.git"
 readme = "README.md"
-license-file = "../LICENSE"
-keywords = ["orm", "database", "sql", "migration", "rust"]
-categories = ["database", "web-programming"]
-
-[lib]
-name = "tikal"
-
-[dependencies]
-tikal_macros = { path = "tikal_macros", version = "0.1.0" }
-async-trait = "0.1"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0.149"
-
-sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio"] }
-tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
-
-chrono = { version = "0.4.43", features = ["serde"] }
-ordered-float = { version = "5.1.0", features = ["serde"] }
-
-thiserror = "2.0.18"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-
-once_cell = "1.19"
-sha2 = "0.10"
-dotenvy = "0.15"
-regex = "1.10"
-hex = "0.4"
-[features]
-default = ["sqlite", "postgres", "mysql", "sqlx/chrono", "sqlx/json"]
-sqlite = ["sqlx/sqlite"]
-postgres = ["sqlx/postgres"]
-mysql = ["sqlx/mysql"]
+license-file = "LICENSE"
